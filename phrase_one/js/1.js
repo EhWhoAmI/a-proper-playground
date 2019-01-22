@@ -7,6 +7,7 @@ var generation = [];
 var gencounter = 0;
 var worldmap = new Array(grid[0]*grid[1]).fill(0);
 const arrSum = arr => arr.reduce((a,b) => a + b, 0)
+var fps = 5;
 
 
 function setup() {
@@ -42,6 +43,15 @@ function setup() {
   button4.class('button');
   button4.mouseClicked(nextGen);
 
+  input1 = createInput();
+  input1.position(515, 90);
+  input1.mouseClicked(updatefps);
+
+  button7 = createButton('Next Auto Gen');
+  button7.position(656, 8);
+  button7.class('button');
+  button7.mouseClicked(nextAutoGen);
+
   infoboard = createElement('p','testing').position(516,90);
 
   noStroke();
@@ -49,7 +59,7 @@ function setup() {
 //////////////////////////////////////////////////////////////////////////
 function draw() {
 
-  frameRate(10);
+  frameRate(fps);
   background('#b3b3b3');
   worldrun1();
 
@@ -90,7 +100,7 @@ function bot() {
     this.botinput.push(this.x);
     this.botinput.push(this.y);
     this.brain = new network()
-    this.brain.init([5])
+    this.brain.init([10,3,5])
   }
   this.show = function() {
     fill('black')
@@ -287,8 +297,8 @@ function network() {
   this.learn = function(rate) {
     for (l=0;l<this.dimension.length;l++) {
       for (n=0;n<this.layer[l].numofneuron;n++) {
-        this.layer[l].neuron[n].w += rate * this.reward;
-        this.layer[l].neuron[n].b += rate * this.reward;
+        this.layer[l].neuron[n].w *= 1 + rate * this.reward;
+        this.layer[l].neuron[n].b *= 1 + rate * this.reward;
       }
     }
   }
@@ -300,10 +310,15 @@ function infoupdate() {
   numofbot = bots.length;
   numoffood = foods.length;
   infoboard.html(
-    'Number of Bots:  '+numofbot+'<br>'+
+    'FPS:   '+fps+'<br>'+
+    'Generation:  '+gencounter+'<br>'+
     'Number of Foods:  '+numoffood+'<br>'+
-    'Generation:  '+gencounter+'<br>'
+    'Number of Bots:  '+numofbot
   );
+}
+
+function updatefps() {
+  fps = 1 + Number(input1.value());
 }
 
 function nextGen(){
@@ -318,9 +333,22 @@ function nextGen(){
       generation.splice(basepointer,1);
     }
     selectionpointer+=1;
+    if (selectionpointer>generation.length) {
+      basepointer += 1
+      selectionpointer = 0;
+    }
   }
   //selection ends
   gencounter += 1;
+}
+
+function nextAutoGen() {
+  for (i00=0;i00<1;i00++) {
+    add10Ibot();
+    add10Ibot();
+    addbot();
+    nextGen();
+  }
 }
 
 function indexOfMax(arr) {
