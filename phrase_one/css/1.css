@@ -12,3 +12,9 @@
     margin: 0px 0px;
     cursor: pointer;
   }
+
+p {
+  font-size: 30px;
+  font-family: fantasy;
+  font-stretch: extra-expanded;
+}

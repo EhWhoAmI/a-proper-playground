@@ -6,6 +6,7 @@ var bots = [];
 var worldmap = new Array(grid[0]*grid[1]).fill(0);
 const arrSum = arr => arr.reduce((a,b) => a + b, 0)
 
+
 function setup() {
   createCanvas(canvasx,canvasy);
 
@@ -19,9 +20,13 @@ function setup() {
   button2.class('button');
   button2.mouseClicked(addbot);
 
-  var nn1 = new network();
-  nn1.init([1,1]);
-  nn1.fp();
+  button3 = createButton('Add 10 Bot');
+  button3.position(276, canvasy+16)
+  button3.class('button');
+  button3.mouseClicked(add10bot);
+
+  infoboard = createElement('p','testing').position(8,550);
+
   noStroke();
 }
 //////////////////////////////////////////////////////////////////////////
@@ -35,10 +40,12 @@ function draw() {
     foods[i].show();
   }
 
-  for (i in bots) {
-    bots[i].move();
-    bots[i].show();
+  for (i0 in bots) {
+    bots[i0].move();
+    bots[i0].show();
   }
+
+  infoupdate();
 
   worldrun2();
 
@@ -62,13 +69,42 @@ function bot() {
     this.y = Math.floor(Math.random() * grid[1]);
     this.location = [this.x*50,this.y*50];
     this.hunger = 100;
+    this.botinput = worldmap;
+    this.botinput.push(this.x);
+    this.botinput.push(this.y);
+    this.brain = new network()
+    this.brain.init([5])
   }
   this.show = function() {
     fill('black')
     rect(this.location[0],this.location[1],50,50);
   }
+  this.update = function() {
+    this.botinput = worldmap;
+    this.botinput.push(this.x);
+    this.botinput.push(this.y);
+    this.brain.loaddata(this.botinput);
+    this.brain.fp();
+  }
+  this.action = function() {
+    this.update();
+    this.actionid = indexOfMax(this.brain.output);
+    if (this.actionid == 0 && this.x < 9) {
+      this.x += 1;
+    }
+    else if (this.actionid == 1 && this.x > 0) {
+      this.x -= 1;
+    }
+    else if (this.actionid == 2 && this.y < 9) {
+      this.y += 1;
+    }
+    else if (this.actionid == 3 && this.y > 0) {
+      this.y -= 1;
+    }
+    else if (this.actionid == 4) {}
+  }
   this.move = function() {
-    this.x += 1;
+    this.action();
     this.location = [this.x*50,this.y*50];
     this.hunger -= 5;
   }
@@ -83,6 +119,12 @@ function addfood() {
 function addbot() {
   bots.push(new bot());
   bots[bots.length-1].init();
+}
+
+function add10bot() {
+  for (i00=0;i00<10;i00++) {
+    addbot();
+  }
 }
 
 function worldrun1() {
@@ -180,4 +222,33 @@ function network() {
     }
     this.output = this.layer[this.layer.length-1].outputlayer;
   }
+}
+
+//Neural Network Ends
+
+function infoupdate() {
+  numofbot = bots.length;
+  numoffood = foods.length;
+  infoboard.html(
+    'Number of Bots:  '+numofbot+'<br>'+
+    'Number of Foods:  '+numoffood+'<br>'
+  );
+}
+
+function indexOfMax(arr) {
+  if (arr.length === 0) {
+      return -1;
+  }
+
+  var max = arr[0];
+  var maxIndex = 0;
+
+  for (var i = 1; i < arr.length; i++) {
+      if (arr[i] > max) {
+          maxIndex = i;
+          max = arr[i];
+      }
+  }
+
+  return maxIndex;
 }
