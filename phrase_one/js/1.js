@@ -43,11 +43,11 @@ function draw() {
   for (i0 in bots) {
     bots[i0].move();
     bots[i0].show();
+    bots[i0].brain.learn(0.001);
   }
 
-  infoupdate();
-
-  worldrun2();
+  infoupdate(); //updates info board
+  worldrun2(); //updates worldmap
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -91,17 +91,33 @@ function bot() {
     this.actionid = indexOfMax(this.brain.output);
     if (this.actionid == 0 && this.x < 9) {
       this.x += 1;
+      this.hunger -= 5;
+      this.brain.reward = -1;
+      this.brain.totalreward -= 1;
     }
     else if (this.actionid == 1 && this.x > 0) {
       this.x -= 1;
+      this.hunger -= 5;
+      this.brain.reward = -1;
+      this.brain.totalreward -= 1;
     }
     else if (this.actionid == 2 && this.y < 9) {
       this.y += 1;
+      this.hunger -= 5;
+      this.brain.reward = -1;
+      this.brain.totalreward -= 1;
     }
     else if (this.actionid == 3 && this.y > 0) {
       this.y -= 1;
+      this.hunger -= 5;
+      this.brain.reward = -1;
+      this.brain.totalreward -= 1;
     }
-    else if (this.actionid == 4) {}
+    else if (this.actionid == 4) {
+      this.brain.reward = -1
+      this.brain.totalreward -= 1;
+    
+    }
   }
   this.move = function() {
     this.action();
@@ -134,6 +150,8 @@ function worldrun1() {
       if (bots[b].x == foods[f].x && bots[b].y == foods[f].y) {
         foods.splice(f, 1);
         bots[b].hunger += 50;
+        bots[b].brain.reward = 10;
+        bots[b].brain.totalreward += 10;
       }}
     if (bots[b].hunger <= 0) {
       bots.splice(b,1);
@@ -208,6 +226,8 @@ function network() {
     this.layer = [];
     this.inputdata;
     this.output;
+    this.reward = 0;
+    this.totalreward = 0;
     for (i2=0;i2<(this.dimension.length);i2+=1) {
       this.layer.push(new layer())
       this.layer[this.layer.length-1].init([1],this.dimension[i2]);
@@ -222,7 +242,15 @@ function network() {
     }
     this.output = this.layer[this.layer.length-1].outputlayer;
   }
-}
+  this.learn = function(rate) {
+    for (l=0;l<this.dimension.length;l++) {
+      for (n=0;n<this.layer[l].numofneuron;n++) {
+        this.layer[l].neuron[n].w *= rate * this.reward;
+        this.layer[l].neuron[n].b *= rate * this.reward;
+      }
+    }
+  }
+  }
 
 //Neural Network Ends
 
